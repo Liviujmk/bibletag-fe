@@ -16,9 +16,9 @@ export interface Collection {
     title: string;
     createdAt?: string;
 }
-    
+
 export interface ArticleFields {
     title: string;
-    collectionName: string;
+    collectionName: string[];
     markdown: string;
 }
