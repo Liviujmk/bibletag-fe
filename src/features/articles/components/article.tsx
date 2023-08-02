@@ -1,19 +1,14 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import { createStyles, Text, Title, TextInput, Button, Image, rem, TypographyStylesProvider, Group } from '@mantine/core';
+import { createStyles, Button, TypographyStylesProvider } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useGetArticleQuery, useDeleteArticleMutation } from '../api/articles.api';
 
-import { Article } from '../interfaces/article.interface';
 import { ArticleSkeleton } from '../../../common/layouts/skeletons/skeleton.layout';
-import { useEffect } from 'react';
 import { WithPermissions } from '../../auth/components/with-permission';
 import { PageTitleComponent } from '../../../common/components/page-title';
+import { FailedPage } from '../../../common/components/failed';
 
-const image = {
-    src: './../../../../public/image.svg'
-}
 
 const useStyles = createStyles((theme) => ({
     wrapper: {
@@ -84,7 +79,7 @@ export function ShowArticle() {
     const navigate = useNavigate();
 
     const { data: article, isError: error } = useGetArticleQuery(id);
-    const [deleteArticle, { isSuccess }] = useDeleteArticleMutation();
+    const [deleteArticle] = useDeleteArticleMutation();
     
     const deleteHandler = () => {
         deleteArticle(article?._id!);
@@ -95,7 +90,7 @@ export function ShowArticle() {
         navigate('/articles');
     }
     
-    if (error) return <div>Failed to load. Article does not exist</div>;
+    if (error) return <FailedPage />;
     if (!article) return <ArticleSkeleton />;
 
     return (
@@ -104,23 +99,10 @@ export function ShowArticle() {
                 <PageTitleComponent pageTitle={article.title?.split('-').join(' ')} size={40}/>
                 <TypographyStylesProvider styles={{ root: { lineHeight: 1.8 } }}>
                     <div dangerouslySetInnerHTML={
-                        // @ts-ignore
-                        { __html: article.markdown ? article.markdown : article.content }
+                        { __html: article.body }
                     } />
                 </TypographyStylesProvider>
             </div>
-            <WithPermissions> 
-                <Button.Group>
-                    <Button 
-                        variant="default"
-                        onClick={() => navigate(`/articles/${article._id}/edit`)}
-                        >Edit</Button>
-                    <Button
-                        color='red'
-                        onClick={deleteHandler}
-                        >Delete</Button>
-                </Button.Group>
-            </WithPermissions>
         </div>
     );
 }

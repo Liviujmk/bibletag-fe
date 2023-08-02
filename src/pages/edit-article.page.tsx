@@ -3,24 +3,29 @@ import { FormArticle } from "../features/articles/components/form-article";
 import { Article } from "../features/articles/interfaces/article.interface";
 import { useUpdateArticleMutation, useGetArticleQuery } from "../features/articles/api/articles.api";
 import { useParams, useNavigate } from "react-router-dom";
-import useSWR from "swr";
+import { FailedPage } from "../common/components/failed";
+import { CardsSkeleton } from "../common/layouts/skeletons/cards.skeleton";
 
 export const EditArticlePage = () => {
     const { id } = useParams<{id: any}>();
     
-    const { data: article, isLoading, isError } = useGetArticleQuery(id);
-    const [updateArticle, { isSuccess }] = useUpdateArticleMutation();
+    const { data: article, isError } = useGetArticleQuery(id);
+    const [updateArticle] = useUpdateArticleMutation();
     const navigate = useNavigate()
     
     const onSubmit = async (fieldValues: Article) => {
-        await updateArticle(fieldValues).then((res) => {
+        console.log(article?._id)
+        await updateArticle({
+            id: article?._id,
+            ...fieldValues,
+        }).then((res) => {
             console.log(res);
             navigate(`/articles/${article?._id}`)
         });
     };
     
-    if (isError) return <div>failed to load</div>;
-    if (!article) return <div>loading...</div>;
+    if (isError) return <FailedPage />;
+    if (!article) return <CardsSkeleton pageTitle="Edit Article" />;
 
     return (
         <div>

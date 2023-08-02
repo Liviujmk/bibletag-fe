@@ -3,6 +3,7 @@ import { FormArticle } from "../features/articles/components/form-article";
 import { Article } from "../features/articles/interfaces/article.interface";
 import { useCreateArticleMutation } from "../features/articles/api/articles.api";
 import { useNavigate } from "react-router-dom";
+import { Box } from "@mantine/core";
 
 export const CreateArticlePage = () => {
     const navigate = useNavigate()
@@ -15,11 +16,9 @@ export const CreateArticlePage = () => {
     };
 
     return (
-        <div>
-            <ContainerLayout>
-                <h1>Create Article</h1>
-                <FormArticle onSubmit={onSubmit} />
-            </ContainerLayout>
-        </div>
+        <Box mt={50}>
+            <h1>Create Article</h1>
+            <FormArticle onSubmit={onSubmit} />
+        </Box>
     );
 };

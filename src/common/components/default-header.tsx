@@ -14,12 +14,13 @@ import {
     
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { Link, useNavigate } from 'react-router-dom';
-import { IconPlus } from '@tabler/icons-react';
-import { WithPermissions } from '../../../features/auth/components/with-permission';
-import { useAppSelector } from '../../store/store-hook';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
+import { WithPermissions } from '../../features/auth/components/with-permission';
+import { useAppSelector } from '../store/store-hook';
 import { notifications } from '@mantine/notifications';
-import { useDeleteArticleMutation } from '../../../features/articles/api/articles.api';
+import { useDeleteArticleMutation } from '../../features/articles/api/articles.api';
+import { checkForCorrectPath } from '../utils/checkForCorrectPath';
 
 const HEADER_HEIGHT = rem(75);
 
@@ -95,6 +96,11 @@ const useStyles = createStyles((theme) => ({
             color: theme.fn.variant({ variant: 'light', color: theme.primaryColor }).color,
         },
     },
+    
+    button: {
+        paddingRight: 0,
+        paddingLeft: '10px',
+    },
 }));
 
 interface DefaultHeaderProps {
@@ -103,12 +109,14 @@ interface DefaultHeaderProps {
 
 export function DefaultHeader({ links }: DefaultHeaderProps) {
     const { activeTab } = useAppSelector((state) => state.app);
-    const [opened, { toggle, close }] = useDisclosure(false);
     const [active, setActive] = useState(activeTab);
+    
+    const [opened, { toggle, close }] = useDisclosure(false);
     const { classes, cx } = useStyles();
+    
     const navigate = useNavigate();
     
-    const [deleteArticle, { isSuccess }] = useDeleteArticleMutation();
+    const [deleteArticle] = useDeleteArticleMutation();
     
     const deleteHandler = (id: string) => {
         deleteArticle(id!);
@@ -132,7 +140,7 @@ export function DefaultHeader({ links }: DefaultHeaderProps) {
             {link.label}
         </Link>
     ));
-
+    
     return (
         <Header height={HEADER_HEIGHT} className={classes.root}>
             <Container className={classes.header} fluid>
@@ -143,28 +151,28 @@ export function DefaultHeader({ links }: DefaultHeaderProps) {
                 
                 <WithPermissions>
                     <Button.Group>
-                    <Button
-                        variant='default'
-                        leftIcon={<IconPlus size="1rem"/>}
-                        onClick={() => {
-                            navigate('/articles/create');
-                        }}
-                        children='Create Article'
-                    />
-                    {
-                        window.location.pathname.split('/')[2] ? (
-                            <>
-                                <Button 
-                                    variant="default"
-                                    onClick={() => navigate(`/articles/${window.location.pathname.split('/')[2]}/edit`)}
-                                >Edit</Button>
-                                <Button
-                                    color='red'
-                                    onClick={() => deleteHandler(window.location.pathname.split('/')[2])}
-                                >Delete</Button>
-                            </>
-                        ) : <></>
-                    }  
+                        <Button
+                            className={classes.button}
+                            variant='default'
+                            leftIcon={<IconPlus/>}
+                            onClick={() => {
+                                navigate('/articles/create');
+                            }}
+                        />
+                        <Button
+                            className={classes.button} 
+                            variant="default"
+                            leftIcon={<IconEdit/>}
+                            disabled={checkForCorrectPath()}
+                            onClick={() => navigate(`/articles/${window.location.pathname.split('/')[2]}/edit`)}
+                        />
+                        <Button
+                            className={classes.button}
+                            color='red'
+                            leftIcon={<IconTrash/>}
+                            disabled={checkForCorrectPath()}
+                            onClick={() => deleteHandler(window.location.pathname.split('/')[2])}
+                        />  
                     </Button.Group>
                 </WithPermissions>
 

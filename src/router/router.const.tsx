@@ -7,6 +7,7 @@ import { EditArticlePage } from "../pages/edit-article.page";
 import { PageLayout } from "../common/layouts/page/page.layout";
 import { RouteObject } from "react-router-dom";
 import { HomePage } from "../pages/home.page";
+import { LoginPage } from "../pages/login.page";
 
 interface NavLink {
     label: string;
@@ -25,6 +26,10 @@ export const NAVLINKS: NavLink[] = [
     {
         label: 'Collections',
         to: '/collections',
+    },
+    {
+        label: 'Profile',
+        to: '/profile',
     }
 ];
 
@@ -36,6 +41,10 @@ export const routes: RouteObject[] = [
             {
                 path: "/",
                 element: <HomePage />,
+            },
+            {
+                path: "/profile",
+                element: <LoginPage />,
             },
             {
                 path: "/articles",

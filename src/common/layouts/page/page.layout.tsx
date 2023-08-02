@@ -1,5 +1,5 @@
 import { ContainerLayout } from "./container.layout"
-import { DefaultHeader } from "../header/default-header"
+import { DefaultHeader } from "../../components/default-header"
 import { NAVLINKS } from "../../../router/router.const"
 import { Outlet } from "react-router-dom"
 

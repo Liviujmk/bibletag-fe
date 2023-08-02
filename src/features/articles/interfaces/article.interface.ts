@@ -8,7 +8,7 @@ export interface Article {
     updatedAt?: string;
     collectionName?: string[];
     collectionId?: string;
-    markdown: string;
+    body: string;
 }
 
 export interface Collection {
@@ -20,5 +20,5 @@ export interface Collection {
 export interface ArticleFields {
     title: string;
     collectionName: string[];
-    markdown: string;
+    body: string;
 }

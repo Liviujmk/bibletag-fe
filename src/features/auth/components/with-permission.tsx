@@ -1,3 +1,4 @@
+import { Auth } from "aws-amplify";
 import { checkIfAuthorized } from "../utils/check-authorized";
 
 interface Props {
@@ -5,6 +6,6 @@ interface Props {
 }
 
 export const WithPermissions = ({ children }: Props) => {
-  const isAuthorized = checkIfAuthorized(); 
+  let isAuthorized = localStorage.getItem("CognitoIdentityServiceProvider.6dkvni4bmjqumuonkr4ti929df.LastAuthUser") === 'liviumit'
   return isAuthorized ? <>{children}</> : <></>;
 };

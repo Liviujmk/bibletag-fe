@@ -1,14 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Button, Input, MultiSelect } from "@mantine/core";
+import { IconHash } from '@tabler/icons-react';
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { Article } from "../interfaces/article.interface";
-import { FORM_ARTICLE_SCHEMA } from "../constants/articles.const";
-import { createArticleFromFields } from "../utils/createArticleFromFields";
-import { Button, Input } from "@mantine/core";
-import { IconFile, IconHash } from '@tabler/icons-react';
 
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
@@ -16,8 +10,13 @@ import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import SubScript from '@tiptap/extension-subscript';
+
+import { Article } from "../interfaces/article.interface";
+import { FORM_ARTICLE_SCHEMA } from "../constants/articles.const";
+import { createArticleFromFields } from "../utils/createArticleFromFields";
+
+import { useGetCollectionsQuery } from "../../collections/api/collection-api";
+import { transformCollectionToSelectData } from "../../collections/utils/transformCollectionToSelectData";
 
 interface FormArticleProps {
     article?: Article;
@@ -25,17 +24,27 @@ interface FormArticleProps {
 }
 
 export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
-    const { handleSubmit, register, setValue,  formState: { errors } } = useForm<Article>({
-        resolver: zodResolver(FORM_ARTICLE_SCHEMA),
-        defaultValues: article,
-    });
+    const {data: collections} = useGetCollectionsQuery();
     
-    const [markdown, setMarkdown] = useState<string | undefined>(article?.content);
+    const [body, setBody] = useState<string>(article?.body || '');
+    const [collectionName, setCollectionName] = useState<string[]>(article?.collectionName || []);
+    
+    const { handleSubmit, register, setValue, formState: { errors } } = useForm<Article>({
+        resolver: zodResolver(FORM_ARTICLE_SCHEMA),
+        defaultValues: article || {
+            title: '',
+            collectionName: [],
+            body: '',
+        },
+    });
+
+    
     useEffect(() => {
         if (article) {
             setValue('title', article.title.split('-').join(" "));
             setValue('collectionName', article.collectionName);
-            setMarkdown(article.markdown);
+            setBody(article.body);
+            setCollectionName(article?.collectionName || []);
         }
     }, [article, setValue]);
 
@@ -44,30 +53,27 @@ export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
             StarterKit,
             Underline,
             Link,
-            Superscript,
-            SubScript,
             Highlight,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
         ],
-        content: article?.markdown ? article?.markdown : markdown,
+        content: article?.body ? article?.body : body,
     });
-    
+
     useEffect(() => {
         if (editor) {
-            register('markdown');
+            register('body');
             editor.on('update', () => {
-                setValue('markdown', editor.getHTML());
-                setMarkdown(editor.getHTML());
+                setValue('body', editor.getHTML());
+                setBody(editor.getHTML());
             });
-            
+
         }
     }, [editor, register, setValue]);
-    
+
     const localOnSubmit = async (formFields: any) => {
         const articleToSubmit = createArticleFromFields(formFields);
-        // @ts-ignore
-        articleToSubmit.markdown = markdown;
-        articleToSubmit._id = article?._id;
+        articleToSubmit.body = body;
+        console.log(articleToSubmit)
         await onSubmit(articleToSubmit)
     };
 
@@ -75,7 +81,6 @@ export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
         <div>
             <form onSubmit={handleSubmit(localOnSubmit)}>
                 <div className='form-group'>
-
                     <Input
                         icon={<IconHash />}
                         placeholder="Title"
@@ -89,14 +94,22 @@ export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
                     )}
                 </div>
                 <div className='form-group'>
-
-                    <Input
-                        icon={<IconFile />}
-                        size="lg"
-                        placeholder="Collection"
-                        {...register('collectionName')}
-                    />
-
+                    {
+                       collections && (
+                           <MultiSelect
+                               data={transformCollectionToSelectData(collections)}
+                               label="Your favorite frameworks/libraries"
+                               placeholder="Pick all that you like"
+                               searchable
+                               nothingFound="Nothing found"
+                               value={collectionName}
+                               onChange={(value) => {
+                                setCollectionName(value);
+                                setValue('collectionName', value);
+                               }}
+                           />
+                        )
+                    }
                     {errors.collectionName && (
                         <div className='alert'>
                             {errors.collectionName.message}
@@ -128,8 +141,6 @@ export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
                                 <RichTextEditor.Hr />
                                 <RichTextEditor.BulletList />
                                 <RichTextEditor.OrderedList />
-                                <RichTextEditor.Subscript />
-                                <RichTextEditor.Superscript />
                             </RichTextEditor.ControlsGroup>
 
                             <RichTextEditor.ControlsGroup>
@@ -147,9 +158,9 @@ export const FormArticle = ({ article, onSubmit }: FormArticleProps) => {
                         <RichTextEditor.Content />
                     </RichTextEditor>
 
-                    {errors.markdown && (
+                    {errors.body && (
                         <div className='alert alert-danger'>
-                            {errors.markdown.message}
+                            {errors.body.message}
                         </div>
                     )}
                 </div>

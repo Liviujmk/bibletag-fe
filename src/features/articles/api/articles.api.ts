@@ -29,8 +29,11 @@ export const articlesApi = createApi({
         }),
         
         updateArticle: builder.mutation({
-            query: (article) => ({
-                url: `${API_PATHS.ARTICLES}/${article._id}`,
+            query: ({
+                id,
+                ...article
+            }) => ({
+                url: `${API_PATHS.ARTICLES}/${id}`,
                 method: 'PUT',
                 body: article
             }),
